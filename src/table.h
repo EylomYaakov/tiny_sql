@@ -2,7 +2,9 @@
 #define table_h
 
 #include <iostream>
-
+#include <variant>
+#include <string>
+#include <vector>
 
 using Value = std::variant<int, std::string>;
 
