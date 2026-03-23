@@ -5,7 +5,7 @@ Token::Token(const std::string& value, Token::Type type): value(value), type(typ
 
 std::vector<Token> splitCommand(const std::string& command){
     std::vector<Token> tokens;
-    std::string delimiters = " \t(),\"\'";
+    std::string delimiters = " \t(),";
     size_t start = 0, end = 0;
     while(start != std::string::npos && end != std::string::npos){
         end = command.find_first_of(delimiters, start);

@@ -26,3 +26,7 @@ enable_testing()
 add_executable(tokenizerTest tests/test_tokenizer.cpp)
 target_link_libraries(tokenizerTest tiny_sql_lib gtest_main)
 add_test(NAME tokenizer_test COMMAND tokenizerTest)
+
+add_executable(parserTest tests/test_parser.cpp)
+target_link_libraries(parserTest tiny_sql_lib gtest_main)
+add_test(NAME parser_test COMMAND parserTest)

@@ -72,21 +72,21 @@ TEST(TokenizerTest, InsertIntoTests){
     };
     EXPECT_EQ(splitCommand(command1), expected1) << "Test 1 failed - INSERT INTO table1 VALUES (1, 10, 100)";
     
-    std::string command2 = "INSERT INTO table2 VALUES (HI, HELLO, HEY)";
+    std::string command2 = "INSERT INTO table2 VALUES (\'HI\', \"HELLO\", \'HEY\')";
     std::vector<Token> expected2 = {
         {"INSERT", Token::KEYWORD},
         {"INTO", Token::KEYWORD},
         {"table2", Token::IDENTIFIER},
         {"VALUES", Token::KEYWORD},
         {"(", Token::SYMBOL},
-        {"HI", Token::LITERAL},
+        {"\'HI\'", Token::LITERAL},
         {",", Token::SYMBOL},
-        {"HELLO", Token::LITERAL},
+        {"\"HELLO\"", Token::LITERAL},
         {",", Token::SYMBOL},
-        {"HEY", Token::LITERAL},
+        {"\'HEY\'", Token::LITERAL},
         {")", Token:: SYMBOL}
     };
-    EXPECT_EQ(splitCommand(command2), expected2) << "Test 2 failed - INSERT INTO table2 VALUES (HI, HELLO, HEY)";
+    EXPECT_EQ(splitCommand(command2), expected2) << "Test 2 failed - INSERT INTO table2 VALUES (\'HI\', \"HELLO\", \'HEY\')";
     
     std::string command3 = "INSERT  INTO   table3 VALUES  ( 1 , 11    )";
     std::vector<Token> expected3 = {
@@ -113,18 +113,18 @@ TEST(TokenizerTest, SelectFromTests){
     };
     EXPECT_EQ(splitCommand(command1), expected1) << "Test 1 failed - SELECT col1 From table1";
     
-    std::string command2 = "SELECT col1, col2, col3 FROM table2";
+    std::string command2 = "SELECT \'col1\', col2, \"col3\" FROM \'table2\'";
     std::vector<Token> expected2 = {
         {"SELECT", Token::KEYWORD},
-        {"col1", Token::IDENTIFIER},
+        {"\'col1\'", Token::IDENTIFIER},
         {",", Token::SYMBOL},
         {"col2", Token::IDENTIFIER},
         {",", Token::SYMBOL},
-        {"col3", Token::IDENTIFIER},
+        {"\"col3\"", Token::IDENTIFIER},
         {"FROM", Token::KEYWORD},
-        {"table2", Token::IDENTIFIER},
+        {"\'table2\'", Token::IDENTIFIER},
     };
-    EXPECT_EQ(splitCommand(command2), expected2) << "Test 2 failed - SELECT col1, col2, col3 FROM table2";
+    EXPECT_EQ(splitCommand(command2), expected2) << "Test 2 failed - SELECT \'col1\', col2, \"col3\" FROM \'table2\'";
     
     std::string command3 = "SELECT  *   FROM table3";
     std::vector<Token> expected3 = {
@@ -151,7 +151,7 @@ TEST(TokenizerTest, SelectWhereTests){
     
     EXPECT_EQ(splitCommand(command1), expected1) << "Test 1 failed - SELECT col1 FROM table1 WHERE col2 = 10";
     
-    std::string command2 = "SELECT   col1, col2, col3  FROM table2 WHERE col3  = hello";
+    std::string command2 = "SELECT   col1, col2, col3  FROM table2 WHERE col3  = \'hello\'";
     std::vector<Token> expected2 = {
         {"SELECT", Token::KEYWORD},
         {"col1", Token::IDENTIFIER},
@@ -164,10 +164,10 @@ TEST(TokenizerTest, SelectWhereTests){
         {"WHERE", Token::KEYWORD},
         {"col3", Token::IDENTIFIER},
         {"=", Token::SYMBOL},
-        {"hello", Token::LITERAL},
+        {"\'hello\'", Token::LITERAL},
         
     };
-    EXPECT_EQ(splitCommand(command2), expected2) << "Test 2 failed - SELECT   col1, col2, col3  FROM table2 WHERE col3  = hello";
+    EXPECT_EQ(splitCommand(command2), expected2) << "Test 2 failed - SELECT   col1, col2, col3  FROM table2 WHERE col3  = \'hello\'";
     
     std::string command3 = "SELECT * FROM users WHERE id = 5";
     std::vector<Token> expected3 = {
@@ -198,7 +198,7 @@ TEST(TokenizerTest, DeleteFromTests){
     
     EXPECT_EQ(splitCommand(command1), expected1) << "Test 1 failed - DELETE FROM table1 WHERE col1 = 10";
     
-    std::string command2 = "DELETE   FROM  table2 WHERE col1 = hello";
+    std::string command2 = "DELETE   FROM  table2 WHERE col1 = \'hello\'";
     std::vector<Token> expected2 = {
         {"DELETE", Token::KEYWORD},
         {"FROM", Token::KEYWORD},
@@ -206,10 +206,10 @@ TEST(TokenizerTest, DeleteFromTests){
         {"WHERE", Token::KEYWORD},
         {"col1", Token::IDENTIFIER},
         {"=", Token::SYMBOL},
-        {"hello", Token::LITERAL},
+        {"\'hello\'", Token::LITERAL},
         
     };
-    EXPECT_EQ(splitCommand(command2), expected2) << "Test 2 failed - DELETE   FROM  table2 WHERE col1 = hello";
+    EXPECT_EQ(splitCommand(command2), expected2) << "Test 2 failed - DELETE   FROM  table2 WHERE col1 = \'hello\'";
 }
 
 TEST(TokenizerTest, DropTableTests){
