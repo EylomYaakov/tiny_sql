@@ -18,7 +18,7 @@ TEST(ParserTest, CreateTableTests){
         CREATE_TABLE,
         "TABLE1",
         {"Col1"},
-        {INTEGER},
+        {Column::INTEGER},
         {}
     };
     
@@ -43,7 +43,7 @@ TEST(ParserTest, CreateTableTests){
         CREATE_TABLE,
         "table2",
         {"col1", "col2", "col3"},
-        {TEXT, TEXT, INTEGER},
+        {Column::TEXT, Column::TEXT, Column::INTEGER},
         {}
     };
     
@@ -65,7 +65,7 @@ TEST(ParserTest, CreateTableTests){
         CREATE_TABLE,
         "table3",
         {"col1", "col2"},
-        {TEXT, INTEGER},
+        {Column::TEXT, Column::INTEGER},
         {}
     };
     EXPECT_EQ(parseCommand(tokens3), expected3) << "Test 3 failed - CREATE    TALBE  table3 (  col1 TEXT , col2  INTEGER  ";

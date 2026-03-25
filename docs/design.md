@@ -16,6 +16,13 @@ After that, I built the actual parsing logic. I identified the command type by t
 
 At first, I wasnt sure how to identify if each value is string or integer, because previously in the tokenizer i split by ' and ", removing them from the string. so, i changed the tokenizer splitCommand function to not split by ' and ", and now the quotes are still part of the string. now, i know that if a value starts and ends with quotes its a string, and if not i try to parse it as int. if cant parse it as int, i treat it as a string(to support text values without quotes).
  
+ ## Engine
+ 
+I created an Engine class that contains an unordered_map of all the tables. I created a dedicated function for each command and then I created an execute_command function that checks the command type and calls the appropriate function for each command. However, because the select function wasn't void(it returns a table), while all the other functions were void, I didn't know what the return type of the execute_command function should be, so I removed it(and I am thinking about calling each command function from the main).
+
+I also merged the select and selectWhere functions into one function because they were very similar, but I had some bugs when calling this function for SELECT WHERE command. I didn't think about the edge cases of empty rows and empty columns that can happen when using a col = value filter, so I didn't delete them(the empty rows and columns). My function returned a bunch of empty vectors and in my tests I was expecting something else, so my tests failed. I found out the source of the bug by going through the code and using debug prints. I noticed the size of the columns vector I was returning was 4(it has 4 empty columns) while I expected it to be 0, so I figured out what the cause of the bug was and added code that deletes empty columns and rows 
+ 
+ 
 ## webistes I used for learning
  
  

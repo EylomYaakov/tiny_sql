@@ -47,10 +47,10 @@ Command parseCreateTable(const std::vector<Token>& tokens){
         command.addColumnName(parseString(tokens[i].value));
         std::string type = tokens[i+1].value;
         if(type == "INTEGER"){
-            command.addColumnType(INTEGER);
+            command.addColumnType(Column::INTEGER);
         }
         else if(type == "TEXT"){
-            command.addColumnType(TEXT);
+            command.addColumnType(Column::TEXT);
         }
         else{
             throw "unkown type";
@@ -206,7 +206,7 @@ std::string parseString(const std::string& s){
 
 Command::Command(CommandType type): type(type){}
 
-Command::Command(CommandType type, const std::string& tableName, const std::vector<std::string>& columnNames, const std::vector<ColumnType>& columnTypes, const std::vector<Value>& values): type(type), tableName(tableName), columnNames(columnNames), columnTypes(columnTypes), values(values) {}
+Command::Command(CommandType type, const std::string& tableName, const std::vector<std::string>& columnNames, const std::vector<Column::Type>& columnTypes, const std::vector<Value>& values): type(type), tableName(tableName), columnNames(columnNames), columnTypes(columnTypes), values(values) {}
 
 void Command::setType(CommandType type){
     this->type = type;
@@ -220,7 +220,7 @@ void Command::addColumnName(const std::string& columnName){
     this->columnNames.push_back(columnName);
 }
 
-void Command::addColumnType(ColumnType type){
+void Command::addColumnType(Column::Type type){
     this->columnTypes.push_back(type);
 }
 
@@ -236,7 +236,7 @@ std::vector<std::string> Command::getColumnNames() const{
     return this->columnNames;
 }
 
-std::vector<ColumnType> Command::getColumnTypes() const{
+std::vector<Column::Type> Command::getColumnTypes() const{
     return this->columnTypes;
 }
 

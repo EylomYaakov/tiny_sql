@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 project(tiny_sql)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 file(GLOB SOURCES src/engine.cpp src/parser.cpp src/printer.cpp src/table.cpp src/tokenizer.cpp)
@@ -30,3 +30,8 @@ add_test(NAME tokenizer_test COMMAND tokenizerTest)
 add_executable(parserTest tests/test_parser.cpp)
 target_link_libraries(parserTest tiny_sql_lib gtest_main)
 add_test(NAME parser_test COMMAND parserTest)
+
+add_executable(engineTest tests/test_engine.cpp)
+target_link_libraries(engineTest tiny_sql_lib gtest_main)
+add_test(NAME test_engine COMMAND engineTest)
+

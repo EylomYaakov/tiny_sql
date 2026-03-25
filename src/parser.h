@@ -6,7 +6,6 @@
 #include "tokenizer.h"
 
 
-enum ColumnType {INTEGER, TEXT};
 enum CommandType {CREATE_TABLE, INSERT_INTO, SELECT, SELECT_WHERE, DELETE_FROM, DROP_TABLE};
 
 class Command{
@@ -14,21 +13,21 @@ private:
     CommandType type;
     std::string tableName;
     std::vector<std::string> columnNames;
-    std::vector<ColumnType> columnTypes;
+    std::vector<Column::Type> columnTypes;
     std::vector<Value> values;
 public:
     Command(CommandType type);
     // consturctor for easier tests
-    Command(CommandType type, const std::string& tableName, const std::vector<std::string>& columnNames, const std::vector<ColumnType>& columnTypes, const std::vector<Value>& values);
+    Command(CommandType type, const std::string& tableName, const std::vector<std::string>& columnNames, const std::vector<Column::Type>& columnTypes, const std::vector<Value>& values);
     void setType(CommandType type);
     void setTableName(const std::string& tableName);
     void addColumnName(const std::string& columnName);
-    void addColumnType(ColumnType type);
+    void addColumnType(Column::Type type);
     void addValue(const Value& value);
     CommandType getType() const;
     std::string getTableName() const;
     std::vector<std::string> getColumnNames() const;
-    std::vector<ColumnType> getColumnTypes() const;
+    std::vector<Column::Type> getColumnTypes() const;
     std::vector<Value> getValues() const;
     //will be used for google testing
     bool operator==(const Command& other) const;
