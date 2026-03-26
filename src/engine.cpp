@@ -4,7 +4,7 @@
 void Engine::createTable(Command command){
     std::string tableName = command.getTableName();
     if(tables.find(tableName) != tables.end()){
-        throw "table " + tableName + " already exists";
+        throw CommandException("error: table " + tableName + " already exists");
     }
     std::vector<std::string> columnNames = command.getColumnNames();
     std::vector<Column::Type> columnTypes = command.getColumnTypes();
@@ -24,7 +24,7 @@ void Engine::insertIntoTable(Command command){
     // using & so we would be able to change the table
     Table& table = tables[tableName];
     if(table.columns.size() != values.size()){
-        throw "incorrect values count";
+        throw CommandException("error: incorrect values count");
     }
     std::vector<Value> row;
     for(int i = 0; i<values.size(); i++){
@@ -36,11 +36,13 @@ void Engine::insertIntoTable(Command command){
         else{
             // value is int but should be string
             if(toAdd.index() == Column::INTEGER){
-                throw std::to_string(std::get<int>(toAdd)) + " is not a a string";
+                // consider the value as string instead of throwing an exception
+                Value stringValue = std::to_string(std::get<int>(toAdd));
+                row.push_back(stringValue);
             }
             // value is string but should be int
             else{
-                throw std::get<std::string>(toAdd) + " is not an integer";
+                throw CommandException("error: " + std::get<std::string>(toAdd) + " is not an integer");
             }
         }
     }
@@ -103,7 +105,7 @@ void Engine::deleteFromTable(Command command){
     std::string columnName = command.getColumnNames()[0];
     int columnIndex = findColumn(columnName, tableName);
     if(columnIndex == -1){
-        throw columnName + " does not exists in table " + tableName;
+        throw CommandException("error: " + columnName + " does not exists in table " + tableName);
     }
     Value value = command.getValues()[0];
     Table& table = tables[tableName];
@@ -122,7 +124,7 @@ void Engine::dropTable(Command command){
 // checks if the table exists and throws exception if not
 void Engine::tableExistsCheck(const std::string& tableName) const{
     if(tables.find(tableName) == tables.end()){
-        throw "table " + tableName + " does not exists";
+        throw CommandException("error: table " + tableName + " does not exists");
     }
     
 }
@@ -162,7 +164,7 @@ std::vector<int> Engine::findColumnIndexes(const std::vector<std::string>& colum
         }
         // throw exception if column does not exists
         if(!found){
-            throw columnNames[i] + " does not exists in table " + tableName;
+            throw CommandException("error: " + columnNames[i] + " does not exists in table " + tableName);
         }
     }
     return columnIndexes;
@@ -175,10 +177,17 @@ int Engine::findWhereFilterColumn(std::vector<std::string>& columnNames, const s
     columnNames.pop_back();
     int whereFilterColumnIndex = findColumn(whereFilterColumn, tableName);
     if(whereFilterColumnIndex == -1){
-        throw whereFilterColumn + " does not exists in table " + tableName;
+        throw CommandException("error: " + whereFilterColumn + " does not exists in table " + tableName);
     }
     return whereFilterColumnIndex;
 }
 
 
 
+std::vector<std::string> Engine::getTableNames() const{
+    std::vector<std::string> names;
+    for(const std::pair<const std::string, Table>& pair : tables){
+        names.push_back(pair.first);
+    }
+    return names;
+}

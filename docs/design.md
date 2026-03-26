@@ -22,12 +22,20 @@ I created an Engine class that contains an unordered_map of all the tables. I cr
 
 I also merged the select and selectWhere functions into one function because they were very similar, but I had some bugs when calling this function for SELECT WHERE command. I didn't think about the edge cases of empty rows and empty columns that can happen when using a col = value filter, so I didn't delete them(the empty rows and columns). My function returned a bunch of empty vectors and in my tests I was expecting something else, so my tests failed. I found out the source of the bug by going through the code and using debug prints. I noticed the size of the columns vector I was returning was 4(it has 4 empty columns) while I expected it to be 0, so I figured out what the cause of the bug was and added code that deletes empty columns and rows 
  
- 
+## Printer & main
+
+
+I implemented a simple printer that finds each column's width by finding the longest value that should be printed in that column. After that, when printing, for each value shorter than the width, I add padding spaces at the start so that all column values to have the same width.
+
+After that, I implemented the REPL loop in main. when getting a command I check if it's .quit or .tables, and if not I call the tokenizer and parser functions to create the tokens vector and then Command object, and after that I call an execute_command function that checks the command type and calls the appropriate function from the engine.
+  
+I had a bug because the exception I threw was char\*(the default type thrown when using ""), and I tried using + for string concatenation which isn't available for char\*, so I created CommandException class that derived from std::exception, and I use it to throw exceptions now
+  
 ## webistes I used for learning
  
  
  
-[CMake Tutorial](https://cmake.org/cmake/help/latest/guide/tutorial/index.html) to learn about Cmake
+[CMake Tutorial](https://cmake.org/cmake/help/latest/guide/tutorial/index.html) to learn about CMake
 
 [cplusplus](https://cplusplus.com) for cpp refrence
 

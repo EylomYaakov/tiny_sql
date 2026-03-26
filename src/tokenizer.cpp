@@ -5,7 +5,7 @@ Token::Token(const std::string& value, Token::Type type): value(value), type(typ
 
 std::vector<Token> splitCommand(const std::string& command){
     std::vector<Token> tokens;
-    std::string delimiters = " \t(),";
+    std::string delimiters = " \t(),=";
     size_t start = 0, end = 0;
     while(start != std::string::npos && end != std::string::npos){
         end = command.find_first_of(delimiters, start);
@@ -30,8 +30,10 @@ std::vector<Token> splitCommand(const std::string& command){
 
 
 
-Token::Type findTokenType(const std::string& value, const std::vector<Token>& tokens){
+Token::Type findTokenType(std::string& value, const std::vector<Token>& tokens){
     if(isKeyword(value)){
+        // convert keywords to upper case to support lower case keywords as well
+        std::transform(value.begin(), value.end(), value.begin(), ::toupper);
         return Token::KEYWORD;
     }
     if(isIdentifer(tokens)){
@@ -43,10 +45,12 @@ Token::Type findTokenType(const std::string& value, const std::vector<Token>& to
     if(isSymbol(value)){
         return Token::SYMBOL;
     }
-    throw "unkown value";
+    throw CommandException("unknown value: " + value);
 }
 
-bool isKeyword(const std::string& value){
+bool isKeyword(std::string value){
+    // convert to upper case to support lower case keywords as well
+    std::transform(value.begin(), value.end(), value.begin(), ::toupper);
     return value == "CREATE" || value == "TABLE" || value == "INSERT" || value == "INTO" || value == "VALUES" || value == "SELECT" || value == "FROM" || value == "WHERE" || value == "DELETE" || value == "DROP" || value == "INTEGER" || value == "TEXT";
 }
 
@@ -57,7 +61,7 @@ bool isIdentifer(const std::vector<Token>& tokens){
     }
     Token prevToken = tokens[tokens.size()-1];
     std::string prevValue = prevToken.value;
-    Token::Type prevType = prevToken.type;
+
     bool isTableName = (prevValue == "TABLE" || prevValue == "INTO" || prevValue == "FROM");
     bool isColName = (prevValue == "SELECT" || prevValue == "WHERE");
     // col name can also be after a symbol (',' or '(') in CREATE and SELECT commands
@@ -105,3 +109,9 @@ bool Token::operator==(const Token& other) const{
 }
 
 
+CommandException::CommandException(const std::string& message):message(message) {}
+
+
+const char* CommandException::what() const noexcept{
+    return message.c_str();
+}

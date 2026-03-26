@@ -19,6 +19,7 @@ public:
     Table select(Command command);
     void deleteFromTable(Command command);
     void dropTable(Command command);
+    std::vector<std::string> getTableNames() const;
     
 };
 

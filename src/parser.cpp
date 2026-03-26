@@ -3,11 +3,11 @@
 Command parseCommand(const std::vector<Token>& tokens){
     // shortest command have 3 tokens
     if(tokens.size() < 3){
-        throw "syntax error";
+        throw CommandException("syntax error: incomplete command");
     }
     //first token is always a keyword
     if(tokens[0].type != Token::KEYWORD){
-        throw "unknown command";
+        throw CommandException("unknown command: " + tokens[0].value);
     }
     if(tokens[0].value == "CREATE" && tokens[1].value == "TABLE"){
         return parseCreateTable(tokens);
@@ -28,7 +28,7 @@ Command parseCommand(const std::vector<Token>& tokens){
     else if(tokens[0].value == "DROP" && tokens[1].value == "TABLE"){
         return parseDropTable(tokens);
     }
-    throw "unknown command";
+    throw CommandException("unknown command: " + tokens[0].value);
 }
 
 Command parseCreateTable(const std::vector<Token>& tokens){
@@ -36,11 +36,11 @@ Command parseCreateTable(const std::vector<Token>& tokens){
     command.setTableName(parseString(tokens[2].value));
     //create table command should have at least 7 tokens
     if(tokens.size() < 7){
-        throw "syntax error";
+        throw CommandException("syntax error: incomplete command");
     }
     // 4rd and last token should be ()
     if(tokens[3].value != "(" || tokens[tokens.size()-1].value != ")"){
-        throw "expected ()";
+        throw CommandException("syntax error: expected ()");
     }
     // 5th token should be the first column name
     for(int i=4; i+2<tokens.size(); i += 3){
@@ -53,12 +53,12 @@ Command parseCreateTable(const std::vector<Token>& tokens){
             command.addColumnType(Column::TEXT);
         }
         else{
-            throw "unkown type";
+            throw CommandException("unknown type: " + type);
         }
         std::string symbol = tokens[i+2].value;
         // the symbol should be ',', excpet the last one
         if(symbol != "," && i+2 != tokens.size()-1){
-            throw "syntax error";
+            throw CommandException("syntax error: expected \',\'");
         }
     }
     return command;
@@ -69,21 +69,21 @@ Command parseInsertInto(const std::vector<Token>& tokens){
     command.setTableName(parseString(tokens[2].value));
     //insert into command should have at least 6 tokens
     if(tokens.size() < 6){
-        throw "syntax error";
+        throw CommandException("syntax error: incomplete command");
     }
     if(tokens[3].value != "VALUES"){
-        throw "syntax error";
+        throw CommandException("syntax error: incomplete command");
     }
     // 4th and last token should be ()
     if(tokens[4].value != "(" || tokens[tokens.size()-1].value != ")"){
-        throw "expected ()";
+        throw CommandException("syntax error: expected ()");
     }
     for(int i=5; i+1 < tokens.size(); i+=2){
         command.addValue(parseLiteral(tokens[i].value));
         std::string symbol = tokens[i+1].value;
         // the symbol should be ',', excpet the last one
         if(symbol != "," && i+1 != tokens.size()-1){
-            throw "syntax error";
+            throw CommandException("syntax error: expected \',\'");
         }
     }
     return command;
@@ -93,11 +93,11 @@ Command parseSelectFrom(const std::vector<Token>& tokens){
     Command command(SELECT);
     //select command should have at least 4 tokens
     if(tokens.size() < 4){
-        throw "syntax error";
+        throw CommandException("syntax error: incomplete command");
     }
     //select command must contain "FROM" and it should be after the first 2 tokens
     if(find(tokens, "FROM", 2) == -1){
-        throw "syntax error";
+        throw CommandException("syntax error: incomplete command");
     }
     //should be the first col
     int i = 1;
@@ -105,7 +105,7 @@ Command parseSelectFrom(const std::vector<Token>& tokens){
         command.addColumnName(parseString(tokens[i].value));
         // after each column name, there should be ',' or "FROM"
         if(tokens[i+1].value != "," && tokens[i+1].value != "FROM"){
-            throw "syntax error";
+            throw CommandException("syntax error: expected \',\'");
         }
         i += 2;
     // stop when passed the "FROM" token
@@ -113,7 +113,7 @@ Command parseSelectFrom(const std::vector<Token>& tokens){
     command.setTableName(parseString(tokens[i].value));
     //if there is no WHERE clause table name should be the last token
     if(i != tokens.size()-1 && tokens[i+1].value != "WHERE"){
-        throw "syntax error";
+        throw CommandException("syntax error: unknown value " + tokens[i+1].value);
     }
     return command;
 }
@@ -122,19 +122,25 @@ Command parseSelectFromWhere(const std::vector<Token>& tokens){
     // would throw exception if there is no "WHERE"
     Command command = parseSelectFrom(tokens);
     command.setType(SELECT_WHERE);
+    
+    //select command should have at least 7 tokens
+    if(tokens.size() < 7){
+        throw CommandException("syntax error: incomplete command");
+    }
+    
     // "WHERE" should only be 5th token or after
     int i = find(tokens, "WHERE", 4) + 1;
     // last col name belongs to the WHERE clause and not the SELECT one
     command.addColumnName(parseString(tokens[i].value));
     // between the col name and the literal, there should be '='
     if(tokens[i+1].value != "="){
-        throw "syntax error";
+        throw CommandException("syntax error: expected \'=\'");
     }
     command.addValue(parseLiteral(tokens[i+2].value));
     i += 3;
     // the value should be the last token
-    if(i != tokens.size()){
-        throw "syntax error";
+    if(i < tokens.size()){
+        throw CommandException("syntax error: unknown value" + tokens[i].value);
     }
     return command;
 }
@@ -154,7 +160,7 @@ Command parseDropTable(const std::vector<Token>& tokens){
     Command command(DROP_TABLE);
     command.setTableName(parseString(tokens[2].value));
     if(tokens.size() > 3){
-        throw "syntax error";
+        throw CommandException("syntax error: incomplete command");
     }
     return command;
 }
@@ -165,14 +171,14 @@ Command parseDeleteFrom(const std::vector<Token>& tokens){
     command.setTableName(parseString(tokens[2].value));
     //delete from command should have at least 6 tokens
     if(tokens.size() < 7){
-        throw "syntax error";
+        throw CommandException("syntax error: incomplete command");
     }
     if(tokens[3].value != "WHERE"){
-        throw "syntax error";
+        throw CommandException("syntax error: incomplete command");
     }
     command.addColumnName(parseString(tokens[4].value));
     if(tokens[5].value != "="){
-        throw "syntax error";
+        throw CommandException("syntax error: expected \'=\'");
     }
     command.addValue(parseLiteral(tokens[6].value));
     return command;
