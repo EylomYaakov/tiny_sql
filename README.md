@@ -103,7 +103,7 @@ Same as SELECT command, but prints only the rows where `<col> = <value>`.
 
 Usage examples:
 
-- `SELECT * FROM users WHERE age = 20' - will print`:
+- `SELECT * FROM users WHERE age = 20 - will print`:
 
 ```
 +---------------------------+
