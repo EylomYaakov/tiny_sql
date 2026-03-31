@@ -28,4 +28,6 @@ struct Table {
     bool operator==(const Table& other) const;
 };
 
+std::string valueToString(Value value);
+
 #endif /* table_h */

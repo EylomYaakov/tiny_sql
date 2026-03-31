@@ -70,6 +70,11 @@ TEST(TokenizerTest, InsertIntoTests){
         {"100", Token::LITERAL},
         {")", Token:: SYMBOL}
     };
+    std::vector<Token> result1 =splitCommand(command1);
+    for(int i = 0; i<result1.size(); i++){
+        std::cout << "TOKEN: " << result1[i].value.size() << std::endl;
+    }
+    
     EXPECT_EQ(splitCommand(command1), expected1) << "Test 1 failed - INSERT INTO table1 VALUES (1, 10, 100)";
     
     std::string command2 = "INSERT INTO table2 VALUES (\'HI\', \"HELLO\", \'HEY\')";

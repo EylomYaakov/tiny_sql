@@ -33,3 +33,12 @@ bool Column::operator==(const Column& other) const{
     }
     return true;
 }
+
+std::string valueToString(Value value){
+    // value is integer
+    if(value.index() == Column::INTEGER){
+        return std::to_string(std::get<int>(value));
+    }
+    // value is text(string)
+    return std::get<std::string>(value);
+}

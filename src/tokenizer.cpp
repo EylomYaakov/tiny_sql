@@ -5,24 +5,45 @@ Token::Token(const std::string& value, Token::Type type): value(value), type(typ
 
 std::vector<Token> splitCommand(const std::string& command){
     std::vector<Token> tokens;
-    std::string delimiters = " \t(),=";
+    std::string delimiters = " \t(),=\'\"";
     size_t start = 0, end = 0;
     while(start != std::string::npos && end != std::string::npos){
         end = command.find_first_of(delimiters, start);
-        std::string tokenValue = command.substr(start, end-start);
+        std::string tokenValue;
+        // case 1 - token value is one of the delimiters, find it and set start=end+1 to move on.
+        if(start == end){
+            tokenValue = command[end];
+            start = end+1;
+        }
+        // case 2 - token value is not one of the delimiters. set start = end(now the next token will be on of the delimiters)
+        else{
+           tokenValue = command.substr(start, end-start);
+           start = end;
+        }
+        
+        // dont add whitespaces
+        if(tokenValue == " " || tokenValue == " \t" || tokenValue.empty()){
+            continue;
+        }
+        
+        // once seeing a quote - stop splitting by regular delimeters, look just for the quote now(everything, including white spaces can be inside of the quotes)
+        if(tokenValue == "\'" || tokenValue ==  "\"" ){
+            // case 1 - this is the first quote - the delimiters are the regular ones, switch the delimiters to the quote only
+            if(delimiters ==  " \t(),=\'\""){
+                delimiters = tokenValue;
+            }
+            // case 2 - the delimiters are not the reulars ones, meaning this is the second quote. switch back to regular delimiters and insert quotes at the start and and of the previous token(so we will now its a string late)
+            else{
+                delimiters = " \t(),=\'\"";
+                std::string& prevTokenValue = tokens[tokens.size()-1].value;
+                prevTokenValue = tokenValue + prevTokenValue + tokenValue;
+            }
+            // dont add the quotes to the token list
+            continue;
+        }
         Token current = Token(tokenValue, findTokenType(tokenValue, tokens));
         tokens.push_back(current);
-        start = command.find_first_not_of(delimiters, end+1);
-        // if the dellimeter is a symbol, add it to the token list (we will need it to check the command structure later)
-        if(end != std::string::npos){
-            std::string removedDelimiters =  command.substr(end, start-end);
-            // ignore leading and trailing whitespaces
-            trim(removedDelimiters);
-            if(isSymbol(removedDelimiters)){
-                Token symbol = Token(removedDelimiters, Token::SYMBOL);
-                tokens.push_back(symbol);
-            }
-        }
+    
         
     }
     return tokens;

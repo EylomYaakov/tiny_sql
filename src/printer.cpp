@@ -18,16 +18,6 @@ std::vector<size_t> getColumnWidths(const Table& table){
 }
 
 
-std::string valueToString(Value value){
-    // value is integer
-    if(value.index() == Column::INTEGER){
-        return std::to_string(std::get<int>(value));
-    }
-    // value is text(string)
-    return std::get<std::string>(value);
-}
-
-
 std::string addPadding(std::string value, size_t width){
     size_t paddingNeeded = width - value.length();
     // no padding needed
@@ -76,4 +66,22 @@ void printTableNames(const std::vector<std::string>& names){
     for(int i=0; i<names.size(); i++){
         std::cout << names[i] << std::endl;
     }
+}
+
+void printWelcome(){
+    std::cout << "Welcome to TinySQL!" << std::endl;
+    std::cout << "Available commands:" << std::endl;
+    std::cout << "CREATE TABLE <name> (<col> <type>, ...)" << std::endl;
+    std::cout << "INSERT INTO <name> VALUES (...)" << std::endl;
+    std::cout << "SELECT <cols|*> FROM <name>" << std::endl;
+    std::cout << "SELECT <cols|*> FROM <name> WHERE <col> = <value>" << std::endl;
+    std::cout << "DELETE FROM <name> WHERE <col> = <value>" << std::endl;
+    std::cout << "DROP TABLE <name>" << std::endl;
+    std::cout << ".tables" << std::endl;
+    std::cout << ".save <file> - <file> is optional. if not specified, tables will be saved to \"tabels.csv\"" << std::endl;
+    std::cout << "All tables will automatically be saved to \"tables.csv\" on .quit" << std::endl;
+    std::cout << ".load <file> - <file> is optional. if not specified, tables will be loaded from \"tables.csv\". loading will delete all current tables" << std::endl;
+    std::cout << "Tables will automatically be loaded from \"tables.csv\" on startup" << std::endl;
+    std::cout << ".quit" << std::endl;
+    std::cout << "Enter a command:" << std::endl;
 }

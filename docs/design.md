@@ -21,6 +21,22 @@ At first, I wasnt sure how to identify if each value is string or integer, becau
 I created an Engine class that contains an unordered_map of all the tables. I created a dedicated function for each command and then I created an execute_command function that checks the command type and calls the appropriate function for each command. However, because the select function wasn't void(it returns a table), while all the other functions were void, I didn't know what the return type of the execute_command function should be, so I removed it(and I am thinking about calling each command function from the main).
 
 I also merged the select and selectWhere functions into one function because they were very similar, but I had some bugs when calling this function for SELECT WHERE command. I didn't think about the edge cases of empty rows and empty columns that can happen when using a col = value filter, so I didn't delete them(the empty rows and columns). My function returned a bunch of empty vectors and in my tests I was expecting something else, so my tests failed. I found out the source of the bug by going through the code and using debug prints. I noticed the size of the columns vector I was returning was 4(it has 4 empty columns) while I expected it to be 0, so I figured out what the cause of the bug was and added code that deletes empty columns and rows 
+
+### persistence to file
+
+I implemented the save and load mechanism using a csv file.
+First, I sesigned the file structure. For each table:
+- The first row contains the table name
+- The second row contains the column names
+- The third row contains the column types
+- Starting from the fourth row, each row represents a row in the table
+
+After each table there is a blank line marking the end of the table. Within each row, all values are separated by ','.
+
+This worked most of the time, but there was a problem when the data itself contained commas.
+ Since I used a comma for seperation, splitting by ',' would break one value into two(or more, depending on the number of commas) values.
+ 
+To fix that, I added quotes at the start and end of each value, and when encountering quotes i stop splitting by ',' until the next quote
  
 ## Printer & main
 
@@ -31,6 +47,10 @@ After that, I implemented the REPL loop in main. when getting a command I check 
   
 I had a bug because the exception I threw was char\*(the default type thrown when using ""), and I tried using + for string concatenation which isn't available for char\*, so I created CommandException class that derived from std::exception, and I use it to throw exceptions now
   
+## other bugs
+
+- since I didn't split the command by quotes, the user wasn't able to enter text values with whitespace in them. I fixed that by changing the splitCommand function in the tokenizer such that the command would be split by quotes again, but when encountering a quote, start splitting only by that quote until encountering another quote(so that between the quotes the user will be able to enter any value, including whitespace and symbols)
+
 ## webistes I used for learning
  
  

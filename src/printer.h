@@ -7,11 +7,10 @@
 
 
 std::vector<size_t> getColumnWidths(const Table& table);
-std::string valueToString(Value value);
 std::string addPadding(std::string value, size_t width);
 void printTable(const Table& table);
 void printTableNames(const std::vector<std::string>& names);
-
+void printWelcome();
 
 
 

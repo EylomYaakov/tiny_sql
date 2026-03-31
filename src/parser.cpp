@@ -5,7 +5,7 @@ Command parseCommand(const std::vector<Token>& tokens){
     if(tokens.size() < 3){
         throw CommandException("syntax error: incomplete command");
     }
-    //first token is always a keyword
+    //first token should always be a keyword
     if(tokens[0].type != Token::KEYWORD){
         throw CommandException("unknown command: " + tokens[0].value);
     }
@@ -34,8 +34,8 @@ Command parseCommand(const std::vector<Token>& tokens){
 Command parseCreateTable(const std::vector<Token>& tokens){
     Command command(CREATE_TABLE);
     command.setTableName(parseString(tokens[2].value));
-    //create table command should have at least 7 tokens
-    if(tokens.size() < 7){
+    
+    if(tokens.size() < getMinCommandTokens(CREATE_TABLE)){
         throw CommandException("syntax error: incomplete command");
     }
     // 4rd and last token should be ()
@@ -67,8 +67,8 @@ Command parseCreateTable(const std::vector<Token>& tokens){
 Command parseInsertInto(const std::vector<Token>& tokens){
     Command command(INSERT_INTO);
     command.setTableName(parseString(tokens[2].value));
-    //insert into command should have at least 6 tokens
-    if(tokens.size() < 6){
+
+    if(tokens.size() < getMinCommandTokens(INSERT_INTO)){
         throw CommandException("syntax error: incomplete command");
     }
     if(tokens[3].value != "VALUES"){
@@ -91,8 +91,8 @@ Command parseInsertInto(const std::vector<Token>& tokens){
 
 Command parseSelectFrom(const std::vector<Token>& tokens){
     Command command(SELECT);
-    //select command should have at least 4 tokens
-    if(tokens.size() < 4){
+    
+    if(tokens.size() < getMinCommandTokens(SELECT)){
         throw CommandException("syntax error: incomplete command");
     }
     //select command must contain "FROM" and it should be after the first 2 tokens
@@ -123,8 +123,7 @@ Command parseSelectFromWhere(const std::vector<Token>& tokens){
     Command command = parseSelectFrom(tokens);
     command.setType(SELECT_WHERE);
     
-    //select command should have at least 7 tokens
-    if(tokens.size() < 7){
+    if(tokens.size() < getMinCommandTokens(SELECT_WHERE)){
         throw CommandException("syntax error: incomplete command");
     }
     
@@ -159,7 +158,8 @@ int find(const std::vector<Token>& tokens, std::string s, int start){
 Command parseDropTable(const std::vector<Token>& tokens){
     Command command(DROP_TABLE);
     command.setTableName(parseString(tokens[2].value));
-    if(tokens.size() > 3){
+    // drop table command should always have 3 tokens(the minimum number)
+    if(tokens.size() != getMinCommandTokens(DROP_TABLE)){
         throw CommandException("syntax error: incomplete command");
     }
     return command;
@@ -169,8 +169,8 @@ Command parseDropTable(const std::vector<Token>& tokens){
 Command parseDeleteFrom(const std::vector<Token>& tokens){
     Command command(DELETE_FROM);
     command.setTableName(parseString(tokens[2].value));
-    //delete from command should have at least 6 tokens
-    if(tokens.size() < 7){
+    
+    if(tokens.size() < getMinCommandTokens(DELETE_FROM)){
         throw CommandException("syntax error: incomplete command");
     }
     if(tokens[3].value != "WHERE"){
@@ -191,7 +191,13 @@ Value parseLiteral(const std::string& literal){
         return text;
     }
     try{
-        Value number = stoi(literal);
+        size_t pos;
+        int number = stoi(literal, &pos);
+        // case 1 - not all character parsed to int - the value is not int, return a string
+        if(pos != literal.length()){
+            return literal;
+        }
+        // case 2 - all character parsed successfully, the value is int
         return number;
     }
     catch(const std::invalid_argument& e){
@@ -271,5 +277,34 @@ bool Command::operator==(const Command& other) const{
         return false;
     }
     return true;
+}
+
+
+int getMinCommandTokens(CommandType type){
+    //create table command should have at least 7 tokens
+    if(type == CREATE_TABLE){
+        return 7;
+    }
+    //insert command should have at least 6 tokens
+    if(type == INSERT_INTO){
+        return 6;
+    }
+    //select command should have at least 4 tokens
+    if(type == SELECT){
+        return 4;
+    }
+    //select where command should have at least 7 tokens
+    if(type == SELECT_WHERE){
+        return 7;
+    }
+    //select command should have 3 tokens
+    if(type == DROP_TABLE){
+        return 3;
+    }
+    //delete from command should have at least 7 tokens
+    if(type == DELETE_FROM){
+        return 7;
+    }
+    return 0;
 }
 

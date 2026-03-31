@@ -53,4 +53,8 @@ Value parseLiteral(const std::string& literal);
 
 std::string parseString(const std::string& s);
 
+// returning the minimum number of tokens each command should have
+int getMinCommandTokens(CommandType type);
+
+
 #endif /* parser_h */

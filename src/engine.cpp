@@ -171,7 +171,7 @@ std::vector<int> Engine::findColumnIndexes(const std::vector<std::string>& colum
 }
 
 
-// a function that finds the index of the column in where command( <col> = value), deletes it from the columnNames vector and throws exception if the colum name does not exists.
+// a function that finds the index of the column in where command( <col> = value), deletes it from the columnNames vector and throws exception if the columnפ name does not exists.
 int Engine::findWhereFilterColumn(std::vector<std::string>& columnNames, const std::string& tableName){
     std::string whereFilterColumn = columnNames[columnNames.size()-1];
     columnNames.pop_back();
@@ -191,3 +191,210 @@ std::vector<std::string> Engine::getTableNames() const{
     }
     return names;
 }
+
+
+void Engine::saveTables(const std::string& filePath) const{
+    std::ofstream file(filePath);
+    if(!file.is_open()){
+        std::cerr << "Failed to open file" << std::endl;
+        return;
+    }
+    for(const std::pair<const std::string, Table>& pair : tables){
+        // write table name
+        file << pair.first << "\n";
+        Table table = pair.second;
+        
+        //write column names
+        for(int i=0; i<table.columns.size(); i++){
+            file <<  "\"" << table.columns[i].name << "\"";
+            if(i != table.columns.size() - 1){
+                file << ",";
+            }
+        }
+        
+        file << "\n";
+        
+        //write column types
+        for(int i=0; i<table.columns.size(); i++){
+            file << "\"" << table.columns[i].type << "\"";
+            if(i != table.columns.size() - 1){
+                file << ",";
+            }
+        }
+        file << "\n";
+        
+        // write data
+        for(int i = 0; i<table.rows.size(); i++){
+            for(int j = 0; j<table.rows[i].size(); j++){
+                file << "\"" << valueToString(table.rows[i][j]) << "\"";
+                if(j != table.rows[i].size()-1){
+                    file << ",";
+                }
+            }
+            file << "\n";
+        }
+        // seperation line between tables
+        file << "\n";
+    }
+    file.close();
+}
+
+void Engine::loadTables(const std::string& filePath, bool startup){
+    if(!startup){
+        std::cout << "loading will delete all current tables, are you sure you want to load? type N for no or anything else for yes" << std::endl;
+        std::string answer;
+        getline(std::cin, answer);
+        if(answer == "N"){
+            return;
+        }
+        
+    }
+    std::ifstream file(filePath);
+    // don't print error on startup - the file might not exists
+    if(!file.is_open() && !startup){
+        std::cerr << "Failed to open file" << std::endl;
+        return;
+    }
+    else if(!file.is_open()){
+        return;
+    }
+    // clear tables
+    tables.clear();
+    Table table;
+    std::string tableName;
+    std::string line;
+    std::vector<std::string> columnNames;
+    std::vector<std::string> columnTypes;
+    // row values
+    std::vector<std::string> values;
+    std::vector<Column> columns;
+    std::vector<std::vector<Value>> rows;
+    // which row of the current table in the csv we are reading(first is table name, second is column names, third is column types, and the rest are data)
+    int tableIndex = 0;
+    while(std::getline(file, line)){
+        std::stringstream s(line);
+        // new table
+        if(line.empty()){
+            table = {tableName, columns, rows};
+            tables.insert({tableName, table});
+            tableIndex = -1;
+            tableName.clear();
+            columnNames.clear();
+            columns.clear();
+            rows.clear();
+        }
+        // table name
+        else if(tableIndex == 0){
+            tableName = line;
+        }
+        // column names
+        else if(tableIndex == 1){
+            columnNames = getLineValues(line);
+        }
+        // column types
+        else if(tableIndex == 2){
+            columnTypes = getLineValues(line);
+            for(int i=0; i<columnTypes.size(); i++){
+                Column column;
+                // INTEGER
+                if(columnTypes[i] == "0"){
+                    column = {columnNames[i], Column::INTEGER};
+                }
+                // TEXT
+                else{
+                    column = {columnNames[i], Column::TEXT};
+                }
+                columns.push_back(column);
+            }
+            
+        }
+        // data
+        else{
+            values = getLineValues(line);
+            std::vector<Value> row;
+            int i = 0;
+            for(int i=0; i<values.size(); i++){
+                if(columns[i].type == Column::INTEGER){
+                    try{
+                        row.push_back(std::stoi(values[i]));
+                    }
+                    catch(const std::invalid_argument& e){
+                        std::cerr << "error loading file" << std::endl;
+                    }
+                }
+                else{
+                    row.push_back(values[i]);
+                }
+            }
+            rows.push_back(row);
+        }
+        tableIndex++;
+    }
+    file.close();
+}
+
+std::string Engine::addEscaping(const std::string& line) const{
+    std::string escapedLine;
+    for(int i=0; i<line.length(); i++){
+        // add \ escaping before real '#' and '\'
+        if(line[i] == '#' || line[i] == '\\'){
+            escapedLine += '\\';
+            escapedLine += line[i];
+        }
+        // ',' get replaced with '#'
+        else if(line[i] == ','){
+            escapedLine += '#';
+        }
+        else{
+            escapedLine += line[i];
+        }
+    }
+    return escapedLine;
+}
+
+std::string Engine::removeEscaping(const std::string& escapedLine) const{
+    std::string line;
+    for(int i=0; i<escapedLine.size(); i++){
+        if(escapedLine[i] == '\\'){
+            if(i != escapedLine.size()-1 && (escapedLine[i+1] == '#' || escapedLine[i+1] == '\\')){
+                line += escapedLine[i+1];
+                // skip next iteration - already added
+                i++;
+                continue;
+            }
+        }
+        // replace '#' with ','
+        else if(escapedLine[i] == '#'){
+            line += ",";
+        }
+        else{
+            line += escapedLine[i];
+        }
+    }
+    return line;
+}
+
+std::vector<std::string> Engine::getLineValues(const std::string& line) const{
+    std::vector<std::string> values;
+    std::string value;
+    bool quote = false;
+    for(int i=0; i<line.size(); i++){
+        // end of value - values splitted by ,
+        if(line[i] == ',' && !quote){
+            values.push_back(value);
+            value.clear();
+        }
+        // start or end of value -  each value starts and ends with quotes
+        else if(line[i] == '\"'){
+            quote = !quote;
+        }
+        // reading value - inside quotes
+        else{
+            value += line[i];
+        }
+    }
+    // push back last value(not ',' after him)
+    values.push_back(value);
+    return values;
+}
+
