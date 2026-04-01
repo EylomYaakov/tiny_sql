@@ -25,7 +25,7 @@ This command creates a new table with the given column names and types.
 
 Usage example:
 
-- `CREATE TABLE "users" ('id' INTEGER, first_name TEXT, 'last_name' TEXT, age INTEGER)` - creates a table named users, with 4 columns, id and first_name, last_name and age.
+- `CREATE TABLE "users" ('id' INTEGER, first_name TEXT, 'last_name' TEXT, age INTEGER)` - creates a table named users, with 4 columns, id, first_name, last_name and age.
 
 The table name is a unique identifier, so after running this command you will not be able to create another table with the same name.
 
