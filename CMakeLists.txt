@@ -34,6 +34,3 @@ add_test(NAME parser_test COMMAND parserTest)
 add_executable(engineTest tests/test_engine.cpp)
 target_link_libraries(engineTest tiny_sql_lib gtest_main)
 add_test(NAME test_engine COMMAND engineTest)
-
-add_compile_options(-fsanitize=address)
-add_link_options(-fsanitize=address)
